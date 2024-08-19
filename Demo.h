@@ -12,7 +12,7 @@
 class EntitiesSpawnSetupSystem : public SetupSystem {
     void run() {
         Entity* square = scene->createEntity("BALL", 500, 400);
-        square->addComponent<VelocityComponent>(300, 300);
+        square->addComponent<VelocityComponent>(150, 150);
         square->addComponent<SpriteComponent>(20, 20, SDL_Color{ 255, 0, 0 });
         square->addComponent<BallComponent>();
 
@@ -47,6 +47,15 @@ class MovementSystem : public UpdateSystem {
 
             pos.x += vel.x * dT;
             pos.y += vel.y * dT;
+
+            if (pos.y >= 768) {
+                auto gameStateView = scene->r.view<GameStateComponent>();
+
+                for (auto entity : gameStateView) {
+                    gameStateView.get<GameStateComponent>(entity).gameOver = true;
+                    
+                }
+            }
         }
     }
 };
@@ -183,6 +192,7 @@ class PaddleMovementSystem : public UpdateSystem {
     }
 };
 
+
 class GameStateSystem : public UpdateSystem {
     void run(float dt) override {
         auto gameStateView = scene->r.view<GameStateComponent>();
@@ -192,12 +202,12 @@ class GameStateSystem : public UpdateSystem {
 
             if (gameState.gameOver) {
                 std::printf("Game over, F");
-                //scene->stop(); // Assuming you have a method to stop the scene
+                
             }
 
             if (gameState.gameWon) {
                 std::printf("Game cleared, YAY");
-                //scene->stop(); // Stop the game
+                //scene->stop(); //
             }
         }
     }
@@ -225,7 +235,7 @@ public:
         addUpdateSystem<WallHitSystem>(sampleScene);
         addUpdateSystem<CollisionSystem>(sampleScene);
         addRenderSystem<SquareRenderSystem>(sampleScene);
-        
+        addUpdateSystem<GameStateSystem>(sampleScene);
 
         setScene(sampleScene);
     }
